@@ -1,0 +1,98 @@
+
+<script src="threejs/three.js"></script>
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id='three-js' on-three-js-get-renderer="getRenderer">
+
+  <style>
+    :host {
+      display: block;
+      position: relative;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+  </style>
+
+  <template>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'three-js',
+      properties :{
+          renderNow: {
+              type: Boolean,
+              value: false,
+              observer: 'renderNowChanged'
+          }
+      },
+      listeners : {
+          track: 'track',
+      },
+      ready: function() {
+        console.log("Ready entered");
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+        Polymer.dom(this.root).appendChild(renderer.domElement);
+        this.renderer = renderer;
+        renderer.setSize(this.offsetWidth, this.offsetHeight);
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapType = THREE.PCFShadowMap;
+        this.scene = new THREE.Scene;
+        //this.invalidate(); FIXME: gives an error => this.job isnt a function 
+        console.log('[%s]: ready', this.localName, this.renderer);
+      },
+      renderNowChanged: function() {
+        this.render();
+      },
+      invalidate: function() {
+        this.validateJob = this.job(this.validateJob, this.validate, 250);
+      },
+      validate: function() {
+        (this.validateJob || this.nullJob).stop();
+        this.render();
+      },
+      nullJob: {
+        stop: function(){}
+      },
+      render: function() {
+        if (this.camera) {
+          this.renderer.render(this.scene, this.camera);
+        } else console.log('no camera');
+      },
+      add3: function(child) {
+        if (child.localName === 'three-js-camera') {
+          this.camera = child.object;
+          //console.log(child.object);
+        }
+        this.scene.add(child.object);
+        this.invalidate();
+      },
+      remove3: function(child) {
+        this.scene.remove(child.object);
+        this.invalidate();
+      },
+      getRenderer: function(event) {
+        event.detail.renderer = this.renderer;
+        //return this.renderer;
+      },
+      //
+      track: function(event) {
+        var obj = this.camera;
+        var obj = Polymer.dom(this).querySelector('[tracking]').object;
+        if (obj) {
+          // TODO(sjmiles): accumulating derivatives is numerically unstable
+          // integrating samples over a single track sequence is a better practice
+          // make this easier to do properly
+          obj.position.x += event.ddx;
+          obj.position.z += event.ddy;
+          this.render();
+        }
+      }
+    });
+  </script>
+</dom-module> <!-- CONVERTED -->
