@@ -19,6 +19,7 @@
   </style>
 
   <template>
+      <content></content>
   </template>
 
   <script>
@@ -35,7 +36,6 @@
           track: 'track',
       },
       ready: function() {
-        console.log("Ready entered");
         var renderer = new THREE.WebGLRenderer({antialias: true});
         Polymer.dom(this.root).appendChild(renderer.domElement);
         this.renderer = renderer;
@@ -43,14 +43,14 @@
         renderer.shadowMapEnabled = true;
         renderer.shadowMapType = THREE.PCFShadowMap;
         this.scene = new THREE.Scene;
-        //this.invalidate(); FIXME: gives an error => this.job isnt a function 
+        this.invalidate();
         console.log('[%s]: ready', this.localName, this.renderer);
       },
       renderNowChanged: function() {
         this.render();
       },
       invalidate: function() {
-        this.validateJob = this.job(this.validateJob, this.validate, 250);
+        this.validateJob = this.debounce(this.validateJob, this.validate, 250);
       },
       validate: function() {
         (this.validateJob || this.nullJob).stop();
@@ -95,4 +95,50 @@
       }
     });
   </script>
+</dom-module> <!-- CONVERTED -->
+
+<link rel="import" href="three-js-object.html"> <!--The three js object behaviour -->
+
+<dom-module id='three-js-camera'  >
+
+      <style>
+      </style>
+
+      <template>
+          <content></content>
+      </template>
+      <script>
+        Polymer({
+          is: 'three-js-camera',
+          properties: {
+            lookAt: {
+              type: String,
+              value: ''
+            },
+            aspect: {
+              type: Number,
+              value:16 / 9
+            },
+            fov: {
+              type:Number,
+              value: 45
+            }
+          },
+          behaviors : [ThreeJSObjectBehaviour],
+          object: null,
+          ready: function() {
+            this.object = new THREE.PerspectiveCamera(this.fov, this.aspect, 0.1, 10000);
+          },
+          updatePosition: function() {
+            //this.super(); TODO: Don't think I need this anymore as I'm not inheriting. Do check up anyway.
+            this.lookAtChanged();
+          },
+          lookAtChanged: function() {
+            var node = this.parentNode.querySelector(this.lookAt);
+            if (node /*&& node.object*/) {
+              this.object.lookAt(node);
+            }
+          },
+      });
+      </script>
 </dom-module> <!-- CONVERTED -->
