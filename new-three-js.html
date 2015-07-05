@@ -143,18 +143,144 @@
       </script>
 </dom-module> <!-- CONVERTED -->
 
+<dom-module id='three-js-material'  >
+
+  <style>
+  </style>
+
+  <template>
+      <content></content>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'three-js-material',
+      kinds: {
+        basic: 'MeshBasicMaterial',
+        lambert: 'MeshLambertMaterial',
+        phong: 'MeshPhongMaterial',
+        texture: 'texture'
+      },
+      sides: {
+        front: 'FrontSide',
+        back: 'BackSide',
+        double: 'DoubleSide'
+      },
+      shadings: {
+        flat: 'FlatShading'
+      },
+      properties: {
+          kind: {
+              type: String,
+          },
+          color: {
+              type: Number,
+              value: 0x1EC876
+          },
+          side: {
+              type: String,
+          },
+          texture: {
+              type: String,
+              value: ''
+          },
+          ambient: {
+              type: Number,
+              value: 0
+          },
+          specular: {
+              type: Number,
+              value: 0
+          },
+          shine: {
+              type: Number,
+              value: 30
+          },
+          object: {
+              observer: 'objectChanged'
+          }
+      },
+
+      attached: function() {
+        this.async(function() {
+          //console.log('[%s]: lightDomReady', this.localName);
+          this.lightDomReady();
+        });
+      },
+      lightDomReady: function() {
+        this.init();
+        //this.super();
+      },
+      init: function() {
+        var kind = this.kinds[this.kind] || this.kinds.lambert;
+        var side = this.sides[this.side] || this.sides.front;
+        var shading = this.shadings[this.shading] || this.shadings.flat;
+        switch (kind) {
+          case 'texture':
+            var texture = THREE.ImageUtils.loadTexture(this.texture);
+            var renderer = this.fire('three-js-get-renderer').detail.renderer; //TODO: Check if this works
+            if (renderer) {
+              texture.anisotropy = renderer.getMaxAnisotropy();
+            } else {
+              console.log('no renderer');
+            }
+            this.object = new THREE.MeshBasicMaterial({map: texture, side: THREE[side]});
+            break;
+          default:
+            this.object = new (THREE[kind])({
+              color: this.color,
+              side: THREE[side],
+              specular: this.specular,
+              shininess: this.shine,
+              ambient: this.ambient,
+              shading: THREE[shading]
+            });
+            break;
+        }
+      },
+      objectChanged: function() {
+        this.fire('three-js-material-changed', this.object); //TODO: Make sure this is working. The migration guide does mention some changes.
+      }
+    });
+  </script>
+</dom-module> <!-- CONVERTED -->
 
 <dom-module id='three-js-geometry'  > <!-- CONVERTED WIP -->
 
   <style>
   </style> <!-- TODO Move style tags here from <template> if needed CONVERTED WIP -->
 
+  <script>
+    Polymer('three-js-geometry', {
+      is: 'three-js-geometry', // CONVERTED WIP
+      w: 100,
+      h: 100,
+      d: 100,
+      extent: 0,
+      ready: function() {
+        this.extentChanged();
+        this.object = new THREE.CubeGeometry(this.w, this.h, this.d);
+      },
+      extentChanged: function() {
+        if (this.extent) {
+          this.w = this.h = this.d = this.extent;
+        }
+      }
+    });
+  </script>
+</dom-module> <!-- CONVERTED -->
+
+<dom-module id='three-js-geometry'  >
+
+  <style>
+  </style>
+
   <template>
       <content></content>
   </template>
   <script>
     Polymer({
-      is: 'three-js-geometry', // CONVERTED WIP
+      is: 'three-js-geometry',
       properties: {
           w: {
               type: Number,
@@ -176,7 +302,6 @@
       ready: function() {
         this.extentChanged();
         this.object = new THREE.BoxGeometry(this.w, this.h, this.d);
-        console.log(this.object);
       },
       extentChanged: function() {
         if (this.extent) {
