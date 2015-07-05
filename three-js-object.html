@@ -86,7 +86,10 @@ ThreeJSObjectBehaviour = {
         */
         this.async(function() {
           console.log('[%s]: lightDomReady', this.localName);
-          this.lightDomReady();
+          if (this.localName != 'three-js-mesh')
+          {
+              this.lightDomReady();
+          }
         });
       },
       lightDomReady: function() {

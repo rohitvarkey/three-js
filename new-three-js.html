@@ -61,6 +61,7 @@
       },
       render: function() {
         if (this.camera) {
+          console.log(this.scene);
           this.renderer.render(this.scene, this.camera);
         } else console.log('no camera');
       },
@@ -141,6 +142,55 @@
           },
       });
       </script>
+</dom-module> <!-- CONVERTED -->
+<dom-module id='three-js-mesh'  on-three-js-material-changed="doMaterialChanged">
+
+  <style>
+  </style>
+
+  <template>
+      <content></content>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'three-js-mesh',
+      behaviors: [ThreeJSObjectBehaviour],
+      ready: function() {
+        //this.validate();
+        this.observeDOM();
+      },
+      observeDOM: function() {
+        /*Polymer.dom(this).onMutation(this, function() {
+          this.validate();
+          this.observeDOM();
+      });*/ //FIXME: Use a mutation observer to fix this.
+      },
+      validate: function() {
+        if (!this.objectParent) {
+          if (!this.geometry) {
+            var g = Polymer.dom(this).querySelector('three-js-geometry');
+            this.geometry = g ? g.object : null;
+          }
+          if (this.geometry && this.material) {
+            //this.removeFromParent3();
+            this.object = new THREE.Mesh(this.geometry, this.material);
+            console.log(this.object);
+            this.addToParent3();
+          }
+        }
+      },
+      lightDomReady: function() {
+        // TODO: As we are not interiting anymore, add a check in the object behaviour
+      },
+      doMaterialChanged: function(event, material) {
+        this.material = material;
+        this.validate();
+        event.stopPropagation();
+      },
+
+    });
+  </script>
 </dom-module> <!-- CONVERTED -->
 
 <dom-module id='three-js-material'  >
@@ -240,31 +290,6 @@
       },
       objectChanged: function() {
         this.fire('three-js-material-changed', this.object); //TODO: Make sure this is working. The migration guide does mention some changes.
-      }
-    });
-  </script>
-</dom-module> <!-- CONVERTED -->
-
-<dom-module id='three-js-geometry'  > <!-- CONVERTED WIP -->
-
-  <style>
-  </style> <!-- TODO Move style tags here from <template> if needed CONVERTED WIP -->
-
-  <script>
-    Polymer('three-js-geometry', {
-      is: 'three-js-geometry', // CONVERTED WIP
-      w: 100,
-      h: 100,
-      d: 100,
-      extent: 0,
-      ready: function() {
-        this.extentChanged();
-        this.object = new THREE.CubeGeometry(this.w, this.h, this.d);
-      },
-      extentChanged: function() {
-        if (this.extent) {
-          this.w = this.h = this.d = this.extent;
-        }
       }
     });
   </script>
