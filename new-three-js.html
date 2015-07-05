@@ -2,7 +2,7 @@
 <script src="threejs/three.js"></script>
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id='three-js' on-three-js-get-renderer="getRenderer">
+<dom-module id='three-js'>
 
   <style>
     :host {
@@ -19,7 +19,6 @@
   </style>
 
   <template>
-      <content></content>
   </template>
 
   <script>
@@ -34,6 +33,7 @@
       },
       listeners : {
           track: 'track',
+          'three-js-get-renderer': 'getRenderer'
       },
       ready: function() {
         var renderer = new THREE.WebGLRenderer({antialias: true});
@@ -106,7 +106,6 @@
       </style>
 
       <template>
-          <content></content>
       </template>
       <script>
         Polymer({
@@ -135,7 +134,7 @@
             this.lookAtChanged();
           },
           lookAtChanged: function() {
-            var node = this.parentNode.querySelector(this.lookAt);
+            var node = Polymer.dom(this).parentNode.querySelector(this.lookAt);
             if (node /*&& node.object*/) {
               this.object.lookAt(node);
             }
@@ -143,13 +142,12 @@
       });
       </script>
 </dom-module> <!-- CONVERTED -->
-<dom-module id='three-js-mesh'  on-three-js-material-changed="doMaterialChanged">
+<dom-module id='three-js-mesh'>
 
   <style>
   </style>
 
   <template>
-      <content></content>
   </template>
 
   <script>
@@ -160,11 +158,24 @@
         //this.validate();
         this.observeDOM();
       },
+      listeners: {
+        'three-js-material-changed': 'doMaterialChanged'
+      },
       observeDOM: function() {
         /*Polymer.dom(this).onMutation(this, function() {
           this.validate();
           this.observeDOM();
       });*/ //FIXME: Use a mutation observer to fix this.
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                this.validate();
+                console.log("Observer worked!");
+                //observer.disconnect();
+                this.observeDOM();
+          });
+        });
+        observer.observe(this,{ childList: true });
+        //FIXME: This isn't ever getting called. 
       },
       validate: function() {
         if (!this.objectParent) {
@@ -175,7 +186,6 @@
           if (this.geometry && this.material) {
             //this.removeFromParent3();
             this.object = new THREE.Mesh(this.geometry, this.material);
-            console.log(this.object);
             this.addToParent3();
           }
         }
@@ -199,7 +209,6 @@
   </style>
 
   <template>
-      <content></content>
   </template>
 
   <script>
@@ -301,7 +310,6 @@
   </style>
 
   <template>
-      <content></content>
   </template>
   <script>
     Polymer({
