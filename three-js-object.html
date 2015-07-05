@@ -4,17 +4,14 @@ ThreeJSObjectBehaviour = {
           x: {
               type: Number,
               value: 0,
-              observer: 'updatePosition'
           },
           y: {
               type: Number,
               value: 0,
-              observer: 'updatePosition'
           },
           z: {
               type: Number,
               value: 0,
-              observer: 'updatePosition'
           },
           rx: {
               type: Number,
@@ -41,6 +38,9 @@ ThreeJSObjectBehaviour = {
               value: false
           }
       },
+      observers : [
+          'updatePosition(x,y,z)'
+      ],
       setPosition: function(x, y, z) {
         this.x = x;
         this.y = y;
@@ -49,7 +49,7 @@ ThreeJSObjectBehaviour = {
       objectChanged: function() {
         this.updatePosition();
       },
-      updatePosition: function() {
+      updatePosition: function(x,y,z) {
         if (this.object) {
           this.object.position.set(Number(this.x), Number(this.y), Number(this.z));
           this.object.rotation.set(this.rx * Math.PI/180, this.ry * Math.PI/180, this.rz * Math.PI/180);
@@ -85,7 +85,8 @@ ThreeJSObjectBehaviour = {
         console.log('[%s]: attached: parent chain: [%s]', this.localName + (this.id ? '#' + this.id : ''), l);
         */
         this.async(function() {
-          console.log('[%s]: lightDomReady', this.localName);
+          console.log('[%s]: lightDomReady [%d]', this.localName, this.x);
+          this.updatePosition(this.x,this.y,this.z);
           if (this.localName != 'three-js-mesh')
           {
               this.lightDomReady();

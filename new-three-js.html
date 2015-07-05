@@ -37,9 +37,11 @@
       },
       ready: function() {
         var renderer = new THREE.WebGLRenderer({antialias: true});
+        console.log(renderer.domElement);
         Polymer.dom(this.root).appendChild(renderer.domElement);
+        console.log(renderer.domElement);
         this.renderer = renderer;
-        renderer.setSize(this.offsetWidth, this.offsetHeight);
+        renderer.setSize(1280, 678); //FIXME :Don't hardcode this.
         renderer.shadowMapEnabled = true;
         renderer.shadowMapType = THREE.PCFShadowMap;
         this.scene = new THREE.Scene;
@@ -62,13 +64,15 @@
       render: function() {
         if (this.camera) {
           console.log(this.scene);
+          //this.camera.lookAt(new THREE.Vector3(0,0,0));
           this.renderer.render(this.scene, this.camera);
+          console.log("rendered again");
         } else console.log('no camera');
       },
       add3: function(child) {
         if (child.localName === 'three-js-camera') {
           this.camera = child.object;
-          //console.log(child.object);
+          this.camera.lookAt(new THREE.Vector3(0,0,0)); //Initial look at to origin.
         }
         this.scene.add(child.object);
         this.invalidate();
@@ -84,13 +88,7 @@
       //
       track: function(event) {
         var obj = this.camera;
-        var obj = Polymer.dom(this).querySelector('[tracking]').object;
         if (obj) {
-          // TODO(sjmiles): accumulating derivatives is numerically unstable
-          // integrating samples over a single track sequence is a better practice
-          // make this easier to do properly
-          obj.position.x += event.ddx;
-          obj.position.z += event.ddy;
           this.render();
         }
       }
@@ -111,7 +109,7 @@
         Polymer({
           is: 'three-js-camera',
           properties: {
-            lookAt: {
+            lookat: {
               type: String,
               value: ''
             },
@@ -129,12 +127,13 @@
           ready: function() {
             this.object = new THREE.PerspectiveCamera(this.fov, this.aspect, 0.1, 10000);
           },
-          updatePosition: function() {
+          /*updatePosition: function() {
             //this.super(); TODO: Don't think I need this anymore as I'm not inheriting. Do check up anyway.
             this.lookAtChanged();
-          },
+        },*/
           lookAtChanged: function() {
             var node = Polymer.dom(this).parentNode.querySelector(this.lookAt);
+            console.log(node);
             if (node /*&& node.object*/) {
               this.object.lookAt(node);
             }
@@ -175,7 +174,7 @@
           });
         });
         observer.observe(this,{ childList: true });
-        //FIXME: This isn't ever getting called. 
+        //FIXME: This isn't ever getting called.
       },
       validate: function() {
         if (!this.objectParent) {
