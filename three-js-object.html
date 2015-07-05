@@ -1,0 +1,99 @@
+<script>
+ThreeJSObjectBehaviour = {
+      properties:{
+          x: {
+              type: Number,
+              value: 0,
+              observer: 'updatePosition'
+          },
+          y: {
+              type: Number,
+              value: 0,
+              observer: 'updatePosition'
+          },
+          z: {
+              type: Number,
+              value: 0,
+              observer: 'updatePosition'
+          },
+          rx: {
+              type: Number,
+              value: 0
+          },
+          ry: {
+              type: Number,
+              value: 0
+          },
+          rz: {
+              type: Number,
+              value: 0
+          },
+          castShadow: {
+              type: Boolean,
+              value: false
+          },
+          receiveShadow: {
+              type: Boolean,
+              value: false
+          },
+          tracking: {
+              type: Boolean,
+              value: false
+          }
+      },
+      setPosition: function(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+      },
+      objectChanged: function() {
+        this.updatePosition();
+      },
+      updatePosition: function() {
+        if (this.object) {
+          this.object.position.set(Number(this.x), Number(this.y), Number(this.z));
+          this.object.rotation.set(this.rx * Math.PI/180, this.ry * Math.PI/180, this.rz * Math.PI/180);
+          this.object.castShadow = this.castShadow;
+          this.object.receiveShadow = this.receiveShadow;
+        }
+      },
+      /*get position() {
+        return {x: this.x, y: this.y, z: this.z};
+      },*/
+      addToParent3: function() {
+        if (this.parentNode.add3 && !this.objectParent) {
+          this.objectParent = this.parentNode;
+          this.parentNode.add3(this);
+          console.log('[%s]: added to threejs-object parent', this.localName + (this.id ? '#' + this.id : ''));
+        }
+      },
+      removeFromParent3: function() {
+        if (this.objectParent) {
+          this.objectParent.remove3(this);
+          this.objectParent = null;
+          console.log('[%s]: REMOVED from threejs-object parent', this.localName + (this.id ? '#' + this.id : ''));
+        }
+      },
+      attached: function() {
+        /*
+        var l = '';
+        var p = this.parentNode;
+        while (p) {
+          l += ':' + p.localName;
+          p = p.parentNode || p.host;
+        }
+        console.log('[%s]: attached: parent chain: [%s]', this.localName + (this.id ? '#' + this.id : ''), l);
+        */
+        this.async(function() {
+          console.log('[%s]: lightDomReady', this.localName);
+          this.lightDomReady();
+        });
+      },
+      lightDomReady: function() {
+        this.addToParent3();
+      },
+      detached: function() {
+        this.removeFromParent3();
+      }
+  };
+</script>
