@@ -142,3 +142,47 @@
       });
       </script>
 </dom-module> <!-- CONVERTED -->
+
+
+<dom-module id='three-js-geometry'  > <!-- CONVERTED WIP -->
+
+  <style>
+  </style> <!-- TODO Move style tags here from <template> if needed CONVERTED WIP -->
+
+  <template>
+      <content></content>
+  </template>
+  <script>
+    Polymer({
+      is: 'three-js-geometry', // CONVERTED WIP
+      properties: {
+          w: {
+              type: Number,
+              value:100
+              },
+          h: {
+              type: Number,
+              value:100
+              },
+          d: {
+              type: Number,
+              value:100
+              },
+          extent: {
+              type: Number,
+              value: 0
+              },
+      },
+      ready: function() {
+        this.extentChanged();
+        this.object = new THREE.BoxGeometry(this.w, this.h, this.d);
+        console.log(this.object);
+      },
+      extentChanged: function() {
+        if (this.extent) {
+          this.w = this.h = this.d = this.extent;
+        }
+      }
+    });
+  </script>
+</dom-module> <!-- CONVERTED -->
