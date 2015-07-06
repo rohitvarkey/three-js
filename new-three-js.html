@@ -19,6 +19,7 @@
   </style>
 
   <template>
+      <content></content>
   </template>
 
   <script>
@@ -40,8 +41,10 @@
         console.log(renderer.domElement);
         Polymer.dom(this.root).appendChild(renderer.domElement);
         console.log(renderer.domElement);
+        console.log(this.offsetWidth);
+        console.log(Polymer.dom(this).parentNode);
         this.renderer = renderer;
-        renderer.setSize(1280, 678); //FIXME :Don't hardcode this.
+        renderer.setSize(500, 500); //FIXME :Don't hardcode this.
         renderer.shadowMapEnabled = true;
         renderer.shadowMapType = THREE.PCFShadowMap;
         this.scene = new THREE.Scene;
@@ -104,6 +107,7 @@
       </style>
 
       <template>
+          <content></content>
       </template>
       <script>
         Polymer({
@@ -147,6 +151,7 @@
   </style>
 
   <template>
+      <content></content>
   </template>
 
   <script>
@@ -158,22 +163,32 @@
         this.observeDOM();
       },
       listeners: {
-        'three-js-material-changed': 'doMaterialChanged'
+        'three-js-material-changed': 'doMaterialChanged',
+        'three-js-geometry-changed': 'doGeometryChanged'
       },
       observeDOM: function() {
         /*Polymer.dom(this).onMutation(this, function() {
           this.validate();
           this.observeDOM();
       });*/ //FIXME: Use a mutation observer to fix this.
-        var observer = new MutationObserver(function(mutations) {
+       this.observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
-                this.validate();
+                if(this.validate){
+                    this.validate();
+                }
+                else {
+                    console.log(this);
+                    return;
+                }
                 console.log("Observer worked!");
                 //observer.disconnect();
-                this.observeDOM();
+                //this.observeDOM();
           });
         });
-        observer.observe(this,{ childList: true });
+        console.log("Mutation being set up!");
+        console.log(this);
+        this.observer.observe(this,{ childList: true });
+        console.log(this.observer);
         //FIXME: This isn't ever getting called.
       },
       validate: function() {
@@ -181,10 +196,14 @@
           if (!this.geometry) {
             var g = Polymer.dom(this).querySelector('three-js-geometry');
             this.geometry = g ? g.object : null;
+            console.log("set geometry as");
+            console.log(this.geometry);
           }
           if (this.geometry && this.material) {
             //this.removeFromParent3();
             this.object = new THREE.Mesh(this.geometry, this.material);
+            console.log("Mesh created");
+            console.log(this.object);
             this.addToParent3();
           }
         }
@@ -194,10 +213,16 @@
       },
       doMaterialChanged: function(event, material) {
         this.material = material;
+        console.log("doMaterialChanged!");
         this.validate();
         event.stopPropagation();
       },
-
+      doGeometryChanged: function(event, geometry) {
+        this.geometry = geometry;
+        console.log("doGeomertyChanged!");
+        this.validate();
+        event.stopPropagation();
+      }
     });
   </script>
 </dom-module> <!-- CONVERTED -->
@@ -208,6 +233,7 @@
   </style>
 
   <template>
+      <content></content>
   </template>
 
   <script>
@@ -270,7 +296,7 @@
         //this.super();
       },
       init: function() {
-        var kind = this.kinds[this.kind] || this.kinds.lambert;
+        var kind = this.kinds[this.kind] || this.kinds.basic;
         var side = this.sides[this.side] || this.sides.front;
         var shading = this.shadings[this.shading] || this.shadings.flat;
         switch (kind) {
@@ -297,6 +323,7 @@
         }
       },
       objectChanged: function() {
+        console.log("Fired!");
         this.fire('three-js-material-changed', this.object); //TODO: Make sure this is working. The migration guide does mention some changes.
       }
     });
@@ -309,6 +336,7 @@
   </style>
 
   <template>
+      <content></content>
   </template>
   <script>
     Polymer({
@@ -330,15 +358,28 @@
               type: Number,
               value: 0
               },
+          object: {
+              observer: 'objectChanged'
+          }
       },
-      ready: function() {
-        this.extentChanged();
-        this.object = new THREE.BoxGeometry(this.w, this.h, this.d);
+      attached: function() {
+        this.async(function() {
+          //console.log('[%s]: lightDomReady', this.localName);
+          this.extentChanged();
+          this.object = new THREE.BoxGeometry(this.w, this.h, this.d);
+          console.log("Geometry created");
+          console.log(this.object);
+        });
       },
       extentChanged: function() {
         if (this.extent) {
           this.w = this.h = this.d = this.extent;
         }
+      },
+      objectChanged: function() {
+          console.log("Fired Geom!");
+          console.log(this.object);
+          this.fire('three-js-geometry-changed', this.object); //TODO: Make sure this is working. The migration guide does mention some changes.
       }
     });
   </script>
