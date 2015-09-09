@@ -11,7 +11,6 @@
 <head>
 <script src="threejs/three.js"></script>
 <script src="threejs/TrackballControls.js"></script>
-<link rel="import" href="../polymer/polymer.html">
 
 <dom-module id="three-js">
     <template>
@@ -230,8 +229,8 @@
           notify: true
         },
         color: {
-          type: Number,
-          value: 2017398,
+          type: String,
+          value: "#00ff00",
           notify: true,
           observer: 'init'
         },
@@ -390,8 +389,8 @@
           notify: true
         },
         color: {
-          type: Number,
-          value: 16777215,
+          type: String,
+          value: "#ffffff",
           notify: true
         },
         distance: {
@@ -794,7 +793,7 @@
         var stacks = Number(this.stacks);
         var sliceCount = slices + 1;
         var a, b, c, d;
-        var material = new THREE.LineBasicMaterial({ color: 16711680 });
+        var material = new THREE.LineBasicMaterial({ color: "#ff0000"});
         var verts = this.object.vertices;
         this.lines = [];
         for (i = 0; i < stacks; i++) {
