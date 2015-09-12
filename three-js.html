@@ -670,7 +670,7 @@
         this.async(function() {
           this.object = new THREE.Vector3(this.x, this.y, this.z);
           this.addToGeom();
-        });
+        }, 500);
       }
     });
   </script>
@@ -834,7 +834,7 @@
       attached: function () {
         this.async(function (){
           this.newGeo();
-        });
+        }, 500);
       }
     });
   </script>
