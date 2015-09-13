@@ -964,3 +964,107 @@
     });
   </script>
 </dom-module>
+
+<dom-module id="three-js-geometry">
+  <script>
+    Polymer({
+      is: 'three-js-geometry',
+      properties: {
+          totalvertices: {
+            type: Number
+          },
+          totalfaces: {
+            type: Number
+          }
+      },
+      newGeo: function () {
+        this.object = new THREE.Geometry();
+        this.vertices = 0;
+        this.faces = 0;
+      },
+      addVertex: function (vertex) {
+        this.object.vertices.push(vertex.object);
+        this.vertices++;
+        if (this.vertices == this.totalvertices && this.faces == this.totalfaces) {
+          //All set to add to parent.
+        }
+      },
+      addFace: function (face) {
+        this.object.faces.push(face.object);
+        this.faces++;
+        if (this.vertices == this.totalvertices && this.faces == this.totalfaces) {
+          this.object.computeFaceNormals();
+          this.object.computeBoundingSphere();
+          Polymer.dom(this).parentNode.addGeom(this.object);
+        }
+      },
+      replaceVertex: function (oldVertex, newVertex) {
+        if (this.object == undefined || this.vertices<this.totalvertices)
+          return;
+        var index = this.object.vertices.indexOf(oldVertex);
+        this.object.vertices[index] = newVertex;
+        this.object.computeFaceNormals();
+        this.object.computeBoundingSphere();
+        Polymer.dom(this).parentNode.addGeom(this.object);
+      },
+      replaceFace: function (oldFace, newFace) {
+        if (this.object == undefined || this.faces<this.totalfaces)
+          return;
+        var index = this.object.faces.indexOf(oldVertex);
+        this.object.vertices[index] = newFace;
+        this.object.computeFaceNormals();
+        this.object.computeBoundingSphere();
+        Polymer.dom(this).parentNode.addGeom(this.object);
+      },
+      attached: function () {
+        this.async(function (){
+          this.newGeo();
+        });
+      }
+    });
+  </script>
+</dom-module>
+
+<dom-module id="three-js-face">
+  <script>
+    Polymer({
+      is: 'three-js-face',
+      properties: {
+        a: {
+          type: Number,
+          notify: true,
+          observer: 'replaceInGeom'
+        },
+        b: {
+          type: Number,
+          notify: true,
+          observer: 'replaceInGeom'
+        },
+        c: {
+          type: Number,
+          notify: true,
+          observer: 'replaceInGeom'
+        }
+      },
+      addToGeom: function () {
+        this.objectParent = Polymer.dom(this).parentNode;
+        if(Polymer.dom(this).parentNode)
+          Polymer.dom(this).parentNode.addFace(this);
+      },
+      //console.log('[%s]: added to threejs-geometry parent', this.localName + (this.id ? '#' + this.id : ''));
+      replaceInGeom: function (newValue, oldValue) {
+        this.objectParent = Polymer.dom(this).parentNode;
+        oldVertex = this.object;
+        this.object = new THREE.Face3(this.a, this.b, this.c);
+        if(this.objectParent)
+        this.objectParent.replaceFace(oldVertex, this.object);
+      },
+      attached: function () {
+        this.async(function() {
+          this.object = new THREE.Face3(this.a, this.b, this.c);
+          this.addToGeom();
+        }, 500);
+      }
+    });
+  </script>
+</dom-module>
