@@ -9,6 +9,7 @@
 -->
 <html>
 <head>
+<link rel="import" href="../polymer/polymer.html">
 <script src="threejs/three.js"></script>
 <script src="threejs/TrackballControls.js"></script>
 
@@ -835,6 +836,129 @@
         this.async(function (){
           this.newGeo();
         }, 500);
+      }
+    });
+  </script>
+</dom-module>
+
+<dom-module id="three-js-line">
+  <script>
+    Polymer({
+      is: 'three-js-line',
+      properties: {
+        totalvertices: {
+          type: Number,
+        },
+        kind: {
+          type: String,
+          value: "strip"
+        }
+      },
+      kinds: {
+        pieces: "LinePieces",
+        strip: "LineStrip"
+      },
+      newGeo: function () {
+        this.geometry = new THREE.Geometry();
+        this.count = 0;
+      },
+      addVertex: function (vertex) {
+        this.geometry.vertices.push(vertex.object);
+        this.count++;
+        if (this.count == this.totalvertices) {
+          this.createLine();
+        }
+      },
+      replaceVertex: function (oldVertex, newVertex) {
+        if (this.geometry == undefined || this.count<this.totalvertices)
+          return;
+        var index = this.geometry.vertices.indexOf(oldVertex);
+        this.geometry.vertices[index] = newVertex;
+        this.createLine();
+      },
+      addMaterial: function (material) {
+        this.material = material;
+      },
+      createLine: function () {
+        var kind = THREE[this.kinds[this.kind]];
+        if (this.geometry && this.material){
+          this.object = new THREE.Line(this.geometry, this.material, kind);
+        }
+        else{
+          console.log("Not defined yet")
+        }
+        Polymer.dom(this).parentNode.addToScene(this.object);
+      },
+      attached: function () {
+        this.async(function (){
+          this.newGeo();
+        });
+      }
+    });
+  </script>
+</dom-module>
+
+<dom-module id="three-js-line-material">
+  <script>
+    Polymer({
+      is: 'three-js-line-material',
+      properties: {
+        kind: {
+          type: String,
+          value: "basic"
+        },
+        color: {
+          type: String,
+          value: "#ff0000"
+        },
+        linewidth: {
+          type: Number,
+          value: 1
+        },
+        scale: {
+          type: Number,
+          value: 1
+        },
+        dashSize: {
+          type: Number,
+          value: 3
+        },
+        gapSize: {
+          type: Number,
+          value: 1
+        },
+        linecap: {
+          type: String,
+          value: 'round'
+        },
+        linejoin: {
+          type: String,
+          value: 'round'
+        },
+      },
+      kinds: {
+        basic: "LineBasicMaterial",
+        dashed: "LineDashedMaterial"
+      },
+      newMaterial: function () {
+        var kind = this.kinds[this.kind] || this.kinds.basic;
+        this.object = new THREE[kind]({
+          color: this.color,
+          linewidth: this.linewidth,
+          //For basic
+          linecap: this.linecap,
+          linejoin: this.linejoin,
+          //For dashed
+          scale: this.scale,
+          dashSize: this.dashSize,
+          gapSize: this.gapSize
+        });
+        Polymer.dom(this).parentNode.addMaterial(this.object);
+      },
+      attached: function () {
+        this.async(function (){
+          this.newMaterial();
+        });
       }
     });
   </script>
