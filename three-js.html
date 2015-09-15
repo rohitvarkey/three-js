@@ -902,6 +902,7 @@
       },
       addVertex: function (vertex) {
         this.geometry.vertices.push(vertex.object);
+        this.geometry.colors.push(vertex.object.color);
         this.count++;
         if (this.count == this.totalvertices) {
           this.createLine();
@@ -973,6 +974,15 @@
           type: String,
           value: 'round'
         },
+        colorkind: {
+          type: String,
+          value: 'no'
+        }
+      },
+      colorKinds: {
+        no: "NoColors",
+        face: "FaceColors",
+        vertex: "VertexColors"
       },
       kinds: {
         basic: "LineBasicMaterial",
@@ -980,6 +990,7 @@
       },
       newMaterial: function () {
         var kind = this.kinds[this.kind] || this.kinds.basic;
+        var colorkind = this.colorKinds[this.colorkind] || this.colorKinds.no;
         this.object = new THREE[kind]({
           color: this.color,
           linewidth: this.linewidth,
@@ -989,7 +1000,9 @@
           //For dashed
           scale: this.scale,
           dashSize: this.dashSize,
-          gapSize: this.gapSize
+          gapSize: this.gapSize,
+          //Setting vertex colors
+          vertexColors: THREE[colorkind]
         });
         Polymer.dom(this).parentNode.addMaterial(this.object);
       },
