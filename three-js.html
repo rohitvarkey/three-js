@@ -269,7 +269,17 @@
           type: Boolean,
           value: false,
           notify: true
+        },
+        colorkind: {
+          type: String,
+          value: "no",
+          notify: true
         }
+      },
+      colorKinds: {
+        no: "NoColors",
+        face: "FaceColors",
+        vertex: "VertexColors"
       },
       detached: function () {
         this.removeFromParent3();
@@ -278,6 +288,7 @@
       //this.super();
       init: function () {
         var kind = this.kinds[this.kind] || this.kinds.lambert;
+        var colorKind = this.colorKinds[this.colorkind] || this.colorKinds.no;
         var side = this.sides[this.side] || this.sides.double;
         var shading = this.shadings[this.shading] || this.shadings.flat;
         switch (kind) {
@@ -304,7 +315,8 @@
             ambient: this.ambient,
             shading: THREE[shading],
             wireframe: this.wireframe,
-            visible: this.visible
+            visible: this.visible,
+            vertexColors: THREE[colorKind],
           });
           break;
         }
@@ -636,7 +648,7 @@
       properties: {
         color: {
           notify: true,
-          observer: 'replaceInGeom'
+          observer: 'replaceInGeom',
         },
         x: {
           type: Number,
@@ -656,8 +668,9 @@
       },
       addToGeom: function () {
         this.objectParent = Polymer.dom(this).parentNode;
-        if(Polymer.dom(this).parentNode)
+        if(Polymer.dom(this).parentNode){
           Polymer.dom(this).parentNode.addVertex(this);
+        }
       },
       //console.log('[%s]: added to threejs-geometry parent', this.localName + (this.id ? '#' + this.id : ''));
       replaceInGeom: function (newValue, oldValue) {
@@ -670,6 +683,7 @@
       attached: function () {
         this.async(function() {
           this.object = new THREE.Vector3(this.x, this.y, this.z);
+          this.object.color = new THREE.Color(this.color);
           this.addToGeom();
         }, 500);
       }
@@ -737,12 +751,34 @@
       },
       addVertex: function (vertex) {
         this.object.vertices.push(vertex.object);
+        this.object.colors.push(vertex.object.color);
         this.count++;
         if (this.count == this.length) {
+          this.addColor();
           this.object.computeFaceNormals();
           this.object.computeVertexNormals();
           if(Polymer.dom(this).parentNode)
             Polymer.dom(this).parentNode.addGeom(this.object);
+        }
+      },
+      addColor: function (vertex) {
+        var verts = this.object.vertices;
+        var faces = this.object.faces;
+        if (faces.length == 0 || verts.length ==0){
+          return;
+        }
+        var sliceCount = this.slices + 1;
+        var count = 0;
+        for (i = 0; i < this.stacks; i++) {
+          for (j = 0; j < this.slices; j++) {
+            a = i * sliceCount + j;
+            b = i * sliceCount + j + 1;
+            c = (i + 1) * sliceCount + j + 1;
+            d = (i + 1) * sliceCount + j;
+            faces[count].vertexColors = [ verts[a].color, verts[b].color, verts[d].color];
+            faces[count + 1].vertexColors = [ verts[b].color, verts[c].color, verts[d].color];
+            count +=2;
+          }
         }
       },
       replaceVertex: function (oldVertex, newVertex) {
@@ -750,6 +786,7 @@
           return;
         var index = this.object.vertices.indexOf(oldVertex);
         this.object.vertices[index] = newVertex;
+        this.addColor(); //TODO: Replace this
         this.object.computeFaceNormals();
         this.object.computeVertexNormals();
         this.object.verticesNeedUpdate = true;
@@ -982,20 +1019,32 @@
         this.vertices = 0;
         this.faces = 0;
       },
+      addToParent: function () {
+        for (i=0; i<this.totalfaces;i++){
+          var face = this.object.faces[i];
+          face.vertexColors = []
+          //Populating face vertex colors
+          face.vertexColors.push(this.object.vertices[face.a].color);
+          face.vertexColors.push(this.object.vertices[face.b].color);
+          face.vertexColors.push(this.object.vertices[face.c].color);
+        }
+        this.object.computeFaceNormals();
+        this.object.computeBoundingSphere();
+        Polymer.dom(this).parentNode.addGeom(this.object);
+      },
       addVertex: function (vertex) {
         this.object.vertices.push(vertex.object);
         this.vertices++;
         if (this.vertices == this.totalvertices && this.faces == this.totalfaces) {
           //All set to add to parent.
+          this.addToParent();
         }
       },
       addFace: function (face) {
         this.object.faces.push(face.object);
         this.faces++;
         if (this.vertices == this.totalvertices && this.faces == this.totalfaces) {
-          this.object.computeFaceNormals();
-          this.object.computeBoundingSphere();
-          Polymer.dom(this).parentNode.addGeom(this.object);
+          this.addToParent();
         }
       },
       replaceVertex: function (oldVertex, newVertex) {
@@ -1003,18 +1052,14 @@
           return;
         var index = this.object.vertices.indexOf(oldVertex);
         this.object.vertices[index] = newVertex;
-        this.object.computeFaceNormals();
-        this.object.computeBoundingSphere();
-        Polymer.dom(this).parentNode.addGeom(this.object);
+        this.addToParent();
       },
       replaceFace: function (oldFace, newFace) {
         if (this.object == undefined || this.faces<this.totalfaces)
           return;
         var index = this.object.faces.indexOf(oldVertex);
         this.object.vertices[index] = newFace;
-        this.object.computeFaceNormals();
-        this.object.computeBoundingSphere();
-        Polymer.dom(this).parentNode.addGeom(this.object);
+        this.addToParent();
       },
       attached: function () {
         this.async(function (){
@@ -1044,7 +1089,16 @@
           type: Number,
           notify: true,
           observer: 'replaceInGeom'
-        }
+        },
+        faceColor: {
+          type: String,
+          value: "#000000"
+        },
+        /*
+        vertexColors: {
+          type: Object,
+          value: ["0x000000", "0x000000", "0x000000"]
+        }*/
       },
       addToGeom: function () {
         this.objectParent = Polymer.dom(this).parentNode;
@@ -1056,12 +1110,15 @@
         this.objectParent = Polymer.dom(this).parentNode;
         oldVertex = this.object;
         this.object = new THREE.Face3(this.a, this.b, this.c);
+        this.object.color = this.color
         if(this.objectParent)
         this.objectParent.replaceFace(oldVertex, this.object);
       },
       attached: function () {
         this.async(function() {
           this.object = new THREE.Face3(this.a, this.b, this.c);
+          this.object.color = this.faceColor;
+          this.object.vertexColors = this.vertexColors;
           this.addToGeom();
         }, 500);
       }
