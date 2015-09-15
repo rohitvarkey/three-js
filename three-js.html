@@ -641,6 +641,38 @@
 </script>
 </dom-module>
 
+<dom-module id="three-js-plane">
+  <script>
+    Polymer({
+      is: 'three-js-plane',
+      properties: {
+        w: {
+          type: Number,
+          value: 10,
+          notify: true,
+          observer: 'newGeo'
+        },
+        h: {
+          type: Number,
+          value: 10,
+          notify: true,
+          observer: 'newGeo'
+        },
+      },
+      attached: function () {
+        this.async(function() {
+          this.newGeo();
+        });
+      },
+      newGeo: function () {
+        this.object = new THREE.PlaneGeometry(this.w, this.h, 1, 1);
+        if(Polymer.dom(this).parentNode)
+          Polymer.dom(this).parentNode.addGeom(this.object);
+      }
+    });
+  </script>
+</dom-module>
+
 <dom-module id="three-js-vertex">
   <script>
     Polymer({
