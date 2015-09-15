@@ -769,6 +769,38 @@
   </script>
 </dom-module>
 
+<dom-module id="three-js-tetrahedron">
+  <script>
+    Polymer({
+      is: 'three-js-tetrahedron',
+      properties: {
+        r: {
+          type: Number,
+          value: 10,
+          notify: true,
+          observer: 'newGeo'
+        },
+        detail: {
+          type: Number,
+          value: 0,
+          notify: true,
+          observer: 'newGeo'
+        }
+      },
+      attached: function () {
+        this.async(function() {
+          this.newGeo();
+        });
+      },
+      newGeo: function () {
+        this.object = new THREE.TetrahedronGeometry(this.r, this.detail);
+        if(Polymer.dom(this).parentNode)
+          Polymer.dom(this).parentNode.addGeom(this.object);
+      }
+    });
+  </script>
+</dom-module>
+
 <dom-module id="three-js-vertex">
   <script>
     Polymer({
