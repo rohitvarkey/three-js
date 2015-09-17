@@ -1300,3 +1300,52 @@
     });
   </script>
 </dom-module>
+
+<dom-module id="three-js-grid">
+  <script>
+    Polymer({
+      is: 'three-js-grid',
+      properties: {
+        size: {
+          type: Number,
+          notify: true,
+          observer: 'newGrid',
+          value: 10
+        },
+        step: {
+          type: Number,
+          notify: true,
+          observer: 'newGrid',
+          value: 10
+        },
+        colorcenter: {
+          type: String,
+          notify: true,
+          value: "#000000",
+          observer: 'newGrid'
+        },
+        colorgrid: {
+          type: String,
+          notify: true,
+          value: "#000000",
+          observer: 'newGrid'
+        }
+      },
+      behaviors: [ThreeJSObjectBehavior],
+      newGrid: function (){
+        //TODO: Debounce this.
+        if(this.objectParent){
+          this.removeFromParent3();
+        }
+        this.object = new THREE.GridHelper(this.size,this.step);
+        this.object.setColors(this.colorcenter, this.colorgrid);
+        this.addToParent3();
+      },
+      attached: function () {
+        this.async(function (){
+          this.newGrid();
+        });
+      }
+    });
+  </script>
+</dom-module>
