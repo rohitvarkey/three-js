@@ -665,7 +665,7 @@
         });
       },
       newGeo: function () {
-        this.object = new THREE.PlaneGeometry(this.w, this.h, 1, 1);
+        this.object = new THREE.PlaneBufferGeometry(this.w, this.h, 1, 1);
         if(Polymer.dom(this).parentNode)
           Polymer.dom(this).parentNode.addGeom(this.object);
       }
