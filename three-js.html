@@ -1182,59 +1182,73 @@
     Polymer({
       is: 'three-js-geometry',
       properties: {
-          totalvertices: {
-            type: Number
+          x: {
+            type: Object,
+            observer: 'newGeo',
           },
-          totalfaces: {
-            type: Number
-          }
+          y: {
+            type: Object,
+            observer: 'newGeo',
+          },
+          z: {
+            type: Object,
+            observer: 'newGeo',
+          },
+          faces: {
+            type: Object,
+            observer: 'newGeo',
+          },
+          colors: {
+            type: Object,
+            observer: 'newGeo',
+          },
+          vertexcolors: {
+            type: Object,
+            observer: 'newGeo',
+          },
       },
       newGeo: function () {
+        if (this.x == undefined || this.y ==undefined || this.z == undefined || this.faces==undefined)
+          return;
+        var x = this.x.split(',');
+        var y = this.y.split(',');
+        var z = this.z.split(',');
+        var faces = this.faces.split(',');
         this.object = new THREE.Geometry();
-        this.vertices = 0;
-        this.faces = 0;
-      },
-      addToParent: function () {
-        for (i=0; i<this.totalfaces;i++){
-          var face = this.object.faces[i];
-          face.vertexColors = []
-          //Populating face vertex colors
-          face.vertexColors.push(this.object.vertices[face.a].color);
-          face.vertexColors.push(this.object.vertices[face.b].color);
-          face.vertexColors.push(this.object.vertices[face.c].color);
+        for (i=0;i<x.length;i++)
+        {
+          this.object.vertices.push(new THREE.Vector3(x[i],y[i],z[i]));
+        }
+        for (i=0; i<faces.length;i+=3){
+          var face = new THREE.Face3(faces[i], faces[i+1], faces[i+2]);
+          this.object.faces.push(face);
+        }
+        if (this.colors)
+        {
+          var colors = this.colors.split(',');
+          for (i=0; i<colors.length; i++)
+          {
+            this.object.faces[i].color = new THREE.Color(colors[i]);
+          }
+        }
+        if (this.vertexcolors)
+        {
+          var vertexcolors = this.vertexcolors.split(',');
+          for (i=0; i<vertexcolors.length; i++)
+          {
+            this.object.faces[i].vertexColors.push(
+              new THREE.Color(vertexcolors[i]),
+              new THREE.Color(vertexcolors[i+1]),
+              new THREE.Color(vertexcolors[i+2])
+            )
+          }
         }
         this.object.computeFaceNormals();
         this.object.computeBoundingSphere();
+        this.addToParent();
+      },
+      addToParent: function () {
         Polymer.dom(this).parentNode.addGeom(this.object);
-      },
-      addVertex: function (vertex) {
-        this.object.vertices.push(vertex.object);
-        this.vertices++;
-        if (this.vertices == this.totalvertices && this.faces == this.totalfaces) {
-          //All set to add to parent.
-          this.addToParent();
-        }
-      },
-      addFace: function (face) {
-        this.object.faces.push(face.object);
-        this.faces++;
-        if (this.vertices == this.totalvertices && this.faces == this.totalfaces) {
-          this.addToParent();
-        }
-      },
-      replaceVertex: function (oldVertex, newVertex) {
-        if (this.object == undefined || this.vertices<this.totalvertices)
-          return;
-        var index = this.object.vertices.indexOf(oldVertex);
-        this.object.vertices[index] = newVertex;
-        this.addToParent();
-      },
-      replaceFace: function (oldFace, newFace) {
-        if (this.object == undefined || this.faces<this.totalfaces)
-          return;
-        var index = this.object.faces.indexOf(oldVertex);
-        this.object.vertices[index] = newFace;
-        this.addToParent();
       },
       attached: function () {
         this.async(function (){
