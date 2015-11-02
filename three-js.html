@@ -865,6 +865,22 @@
           type: Number,
           notify: true,
           value: 0
+        },
+        x: {
+          type: Object,
+          observer: 'newGeo',
+        },
+        y: {
+          type: Object,
+          observer: 'newGeo',
+        },
+        z: {
+          type: Object,
+          observer: 'newGeo',
+        },
+        vertexcolors: {
+          type: Object,
+          observer: 'newGeo',
         }
       },
       newGeo: function () {
@@ -908,50 +924,36 @@
             ]);
           }
         }
-      },
-      addVertex: function (vertex) {
-        this.object.vertices.push(vertex.object);
-        this.object.colors.push(vertex.object.color);
-        this.count++;
-        if (this.count == this.length) {
-          this.addColor();
-          this.object.computeFaceNormals();
-          this.object.computeVertexNormals();
-          if(Polymer.dom(this).parentNode)
-            Polymer.dom(this).parentNode.addGeom(this.object);
-        }
-      },
-      addColor: function (vertex) {
-        var verts = this.object.vertices;
-        var faces = this.object.faces;
-        if (faces.length == 0 || verts.length ==0){
+        if (this.x == undefined || this.y ==undefined || this.z == undefined)
           return;
+        var x = this.x.split(',');
+        var y = this.y.split(',');
+        var z = this.z.split(',');
+        for (i=0;i<x.length;i++)
+        {
+          this.object.vertices.push(new THREE.Vector3(x[i],y[i],z[i]));
         }
-        var sliceCount = this.slices + 1;
-        var count = 0;
-        for (i = 0; i < this.stacks; i++) {
-          for (j = 0; j < this.slices; j++) {
-            a = i * sliceCount + j;
-            b = i * sliceCount + j + 1;
-            c = (i + 1) * sliceCount + j + 1;
-            d = (i + 1) * sliceCount + j;
-            faces[count].vertexColors = [ verts[a].color, verts[b].color, verts[d].color];
-            faces[count + 1].vertexColors = [ verts[b].color, verts[c].color, verts[d].color];
-            count +=2;
+        if (this.vertexcolors)
+        {
+          var vertexcolors = this.vertexcolors.split(',');
+          for (i=0; i<faces.length; i++)
+          {
+            var a = this.object.faces[i].a
+            var b = this.object.faces[i].b
+            var c = this.object.faces[i].c
+            this.object.faces[i].vertexColors.push(
+              new THREE.Color(vertexcolors[a]),
+              new THREE.Color(vertexcolors[b]),
+              new THREE.Color(vertexcolors[c])
+            )
           }
         }
-      },
-      replaceVertex: function (oldVertex, newVertex) {
-        if (this.object == undefined || this.count<this.length)
-          return;
-        var index = this.object.vertices.indexOf(oldVertex);
-        this.object.vertices[index] = newVertex;
-        this.addColor(); //TODO: Replace this
         this.object.computeFaceNormals();
-        this.object.computeVertexNormals();
-        this.object.verticesNeedUpdate = true;
-        if(Polymer.dom(this).parentNode)
-          Polymer.dom(this).parentNode.addGeom(this.object);
+        this.object.computeBoundingSphere();
+        this.addToParent();
+      },
+      addToParent: function () {
+        Polymer.dom(this).parentNode.addGeom(this.object);
       },
       attached: function () {
         this.async(function (){
