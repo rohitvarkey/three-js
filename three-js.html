@@ -964,92 +964,27 @@
   </script>
 </dom-module>
 
-<dom-module id="three-js-meshlines">
-  <script>
-    Polymer({
-      is: 'three-js-meshlines',
-      properties: {
-        slices: {
-          type: Number,
-          notify: true
-        },
-        stacks: {
-          type :Number,
-          notify: true
-        }
-      },
-      newGeo: function () {
-        this.object = new THREE.Geometry();
-        this.count = 0;
-        //Keep track of number of vertices added.
-        var slices = Number(this.slices);
-        var stacks = Number(this.stacks);
-        this.length = (slices + 1) * (stacks + 1);
-      },
-      //Total number of vertices.
-      meshLines: function () {
-        var i, j, p;
-        var slices = Number(this.slices);
-        var stacks = Number(this.stacks);
-        var sliceCount = slices + 1;
-        var a, b, c, d;
-        var material = new THREE.LineBasicMaterial({ color: "#ffffff", vertexColors: THREE.VertexColors});
-        var verts = this.object.vertices;
-        this.lines = [];
-        for (i = 0; i < stacks; i++) {
-          this.lines.push(new THREE.Geometry());
-          for (j = 0; j < slices; j++) {
-            a = verts[i * sliceCount + j];
-            this.lines[i].vertices.push(a);
-            this.lines[i].colors.push(a.color);
-          }
-          this.newLine = new THREE.Line(this.lines[i], material);
-          if(Polymer.dom(this).parentNode.parentNode)
-            Polymer.dom(this).parentNode.parentNode.scene.add(this.newLine);
-        }
-        for (i = stacks; i < slices + stacks; i++) {
-          this.lines.push(new THREE.Geometry());
-          for (j = 0; j < stacks; j++) {
-            a = verts[j * (stacks + 1) + i - stacks];
-            this.lines[i].vertices.push(a);
-            this.lines[i].colors.push(a.color);
-          }
-          this.newLine = new THREE.Line(this.lines[i], material);
-          if(Polymer.dom(this).parentNode)
-            Polymer.dom(this).parentNode.parentNode.scene.add(this.newLine);
-        }
-      },
-      addVertex: function (vertex) {
-        this.object.vertices.push(vertex.object);
-        this.count++;
-        if (this.count == this.length) {
-          this.meshLines();
-        }
-      },
-      replaceVertex: function (oldVertex, newVertex) {
-        if (this.object == undefined || this.count<this.length)
-          return;
-        var index = this.object.vertices.indexOf(oldVertex);
-        this.object.vertices[index] = newVertex;
-        this.meshLines();
-      },
-      attached: function () {
-        this.async(function (){
-          this.newGeo();
-        });
-      }
-    });
-  </script>
-</dom-module>
-
 <dom-module id="three-js-line">
   <script>
     Polymer({
       is: 'three-js-line',
       behaviors: [ThreeJSObjectBehavior],
       properties: {
-        totalvertices: {
-          type: Number,
+        xs: {
+          type: Object,
+          observer: 'newGeo',
+        },
+        ys: {
+          type: Object,
+          observer: 'newGeo',
+        },
+        zs: {
+          type: Object,
+          observer: 'newGeo',
+        },
+        vertexcolors: {
+          type: Object,
+          observer: 'newGeo',
         },
         kind: {
           type: String,
@@ -1062,35 +997,42 @@
       },
       newGeo: function () {
         this.geometry = new THREE.Geometry();
-        this.count = 0;
-      },
-      addVertex: function (vertex) {
-        this.geometry.vertices.push(vertex.object);
-        this.geometry.colors.push(vertex.object.color);
-        this.count++;
-        if (this.count == this.totalvertices) {
-          this.createLine();
-        }
-      },
-      replaceVertex: function (oldVertex, newVertex) {
-        if (this.geometry == undefined || this.count<this.totalvertices)
+        if (this.xs == undefined || this.ys ==undefined || this.zs == undefined)
           return;
-        var index = this.geometry.vertices.indexOf(oldVertex);
-        this.geometry.vertices[index] = newVertex;
-        this.createLine();
+        var x = this.xs.split(',');
+        var y = this.ys.split(',');
+        var z = this.zs.split(',');
+        for (i=0;i<x.length;i++)
+        {
+          this.geometry.vertices.push(new THREE.Vector3(x[i],y[i],z[i]));
+        }
+        if (this.vertexcolors)
+        {
+          var vertexcolors = this.vertexcolors.split(',');
+          for (i=0; i<vertexcolors.length; i++)
+          {
+            this.geometry.colors.push(
+              new THREE.Color(vertexcolors[i])
+            );
+          }
+        }
+        this.createLine()
       },
       addMaterial: function (material) {
         this.material = material;
+        this.createLine();
       },
       createLine: function () {
         var kind = THREE[this.kinds[this.kind]];
+        console.log(this.geometry);
+        console.log(this.material);
         if (this.geometry && this.material){
           this.object = new THREE.Line(this.geometry, this.material, kind);
+          Polymer.dom(this).parentNode.addToScene(this.object);
         }
         else{
           console.log("Not defined yet")
         }
-        Polymer.dom(this).parentNode.addToScene(this.object);
       },
       attached: function () {
         this.async(function (){
