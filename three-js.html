@@ -801,55 +801,6 @@
   </script>
 </dom-module>
 
-<dom-module id="three-js-vertex">
-  <script>
-    Polymer({
-      is: 'three-js-vertex',
-      properties: {
-        color: {
-          notify: true,
-          observer: 'replaceInGeom',
-        },
-        x: {
-          type: Number,
-          notify: true,
-          observer: 'replaceInGeom'
-        },
-        y: {
-          type: Number,
-          notify: true,
-          observer: 'replaceInGeom'
-        },
-        z: {
-          type: Number,
-          notify: true,
-          observer: 'replaceInGeom'
-        }
-      },
-      addToGeom: function () {
-        this.objectParent = Polymer.dom(this).parentNode;
-        if(Polymer.dom(this).parentNode){
-          Polymer.dom(this).parentNode.addVertex(this);
-        }
-      },
-      //console.log('[%s]: added to threejs-geometry parent', this.localName + (this.id ? '#' + this.id : ''));
-      replaceInGeom: function (newValue, oldValue) {
-        this.objectParent = Polymer.dom(this).parentNode;
-        oldVertex = this.object;
-        this.object = new THREE.Vector3(this.x, this.y, this.z);
-        if(this.objectParent)
-        this.objectParent.replaceVertex(oldVertex, this.object);
-      },
-      attached: function () {
-        this.async(function() {
-          this.object = new THREE.Vector3(this.x, this.y, this.z);
-          this.object.color = new THREE.Color(this.color);
-          this.addToGeom();
-        }, 500);
-      }
-    });
-  </script>
-</dom-module>
 
 <dom-module id="three-js-parametric">
   <script>
@@ -1198,62 +1149,6 @@
         this.async(function (){
           this.newGeo();
         });
-      }
-    });
-  </script>
-</dom-module>
-
-<dom-module id="three-js-face">
-  <script>
-    Polymer({
-      is: 'three-js-face',
-      properties: {
-        a: {
-          type: Number,
-          notify: true,
-          observer: 'replaceInGeom'
-        },
-        b: {
-          type: Number,
-          notify: true,
-          observer: 'replaceInGeom'
-        },
-        c: {
-          type: Number,
-          notify: true,
-          observer: 'replaceInGeom'
-        },
-        faceColor: {
-          type: String,
-          value: "#000000"
-        },
-        /*
-        vertexColors: {
-          type: Object,
-          value: ["0x000000", "0x000000", "0x000000"]
-        }*/
-      },
-      addToGeom: function () {
-        this.objectParent = Polymer.dom(this).parentNode;
-        if(Polymer.dom(this).parentNode)
-          Polymer.dom(this).parentNode.addFace(this);
-      },
-      //console.log('[%s]: added to threejs-geometry parent', this.localName + (this.id ? '#' + this.id : ''));
-      replaceInGeom: function (newValue, oldValue) {
-        this.objectParent = Polymer.dom(this).parentNode;
-        oldVertex = this.object;
-        this.object = new THREE.Face3(this.a, this.b, this.c);
-        this.object.color = this.color
-        if(this.objectParent)
-        this.objectParent.replaceFace(oldVertex, this.object);
-      },
-      attached: function () {
-        this.async(function() {
-          this.object = new THREE.Face3(this.a, this.b, this.c);
-          this.object.color = this.faceColor;
-          this.object.vertexColors = this.vertexColors;
-          this.addToGeom();
-        }, 500);
       }
     });
   </script>
