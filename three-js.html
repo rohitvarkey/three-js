@@ -1199,6 +1199,10 @@
         opacity: {
             type: Number,
             value: 1.00
+        },
+        alphatest: {
+            type: Number,
+            value: 0.00
         }
       },
       colorKinds: {
@@ -1223,7 +1227,8 @@
           //URL of texture
           map: map,
           opacity: this.opacity,
-          transparent: this.transparent
+          transparent: this.transparent,
+          alphaTest: this.alphatest
         });
         Polymer.dom(this).parentNode.addMaterial(this.object);
       },
