@@ -13,8 +13,9 @@ bower install rohitvarkey/three-js
 If you are editing a local Git repository, you can also do `bower install ./.#branch`, where "branch" is the name of your Git branch. This allows for
 easier development.
 
-Now run a server from the top level directory (with, for example, `python -m SimpleHTTPServer`)
-and try visiting `bower_components/three-js/test.html` on your browser!
+Now run a server from the top level directory and try visiting `bower_components/three-js/test.html`
+in your browser! For example, this is done easily with `python -m SimpleHTTPServer`,
+which makes http://localhost:8000/bower_components/three-js/test.html the URL.
 
 # Acknowledgements
 
