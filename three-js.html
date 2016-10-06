@@ -386,12 +386,10 @@
       },
       attached: function () {
         this.async(function (){
-          console.log("aspect (before) = ", this.aspect);
           if (typeof this.aspect === "undefined") {
             var renderer = this.fire('three-js-get-renderer').detail.renderer;
             this.aspect = renderer.domElement.clientWidth / renderer.domElement.clientHeight;
           }
-          console.log("aspect (after) = ", this.aspect)
 
           this.object = new THREE.PerspectiveCamera(this.fov, this.aspect, 0.1, 10000);
           this.object.lookAt(new THREE.Vector3(0, 0, 0));
