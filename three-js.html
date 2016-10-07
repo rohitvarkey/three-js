@@ -13,22 +13,6 @@
 <script src="threejs/TrackballControls.js"></script>
 
 <dom-module id="three-js">
-    <template>
-      <style>
-            :host {
-              display: block;
-              position: relative;
-            }
-            canvas {
-              position: absolute;
-              top: 0;
-              right: 0;
-              bottom: 0;
-              left: 0;
-            }
-      </style>
-      <content></content>
-    </template>
     <script>
         Polymer({
           is: 'three-js',
@@ -40,24 +24,27 @@
             }
         },
         ready: function () {
-          var renderer = new THREE.WebGLRenderer({
+          this.renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true
           });
-          Polymer.dom(this.root).appendChild(renderer.domElement);
-          this.renderer = renderer;
-          var parent = Polymer.dom(this).parentNode;
-          if (typeof parent.clientWidth === "undefined" || typeof parent.clientHeight === "undefined") {
-            renderer.setSize(1000, 562);
-          } else {
-            renderer.setSize(parent.clientWidth, parent.clientHeight);
-          }
-          //renderer.shadowMapEnabled = true;
-          //renderer.shadowMapType = THREE.PCFShadowMap;
-          renderer.setClearColor(this.bgcolor);
+          Polymer.dom(this.root).appendChild(this.renderer.domElement);
+          //this.renderer.shadowMapEnabled = true;
+          //this.renderer.shadowMapType = THREE.PCFShadowMap;
+          this.renderer.setClearColor(this.bgcolor);
           this.scene = new THREE.Scene();
           console.log('[%s]: ready', this.localName, this.renderer);
           this.render(); //comment to disable rendering.
+        },
+        attached: function() {
+          this.async(function() {
+            var parent = Polymer.dom(this).parentNode;
+            if (typeof parent.clientWidth === "undefined" || typeof parent.clientHeight === "undefined") {
+                this.renderer.setSize(1000, 562);
+            } else {
+                this.renderer.setSize(parent.clientWidth, parent.clientHeight);
+            }
+          });
         },
         bgcolorchanged: function() {
           if(this.renderer)
@@ -381,7 +368,10 @@
       is: 'three-js-camera',
       behaviors: [ThreeJSObjectBehavior],
       properties: {
-        aspect: { value: 16/9, notify: true },
+        aspect: {
+          type: Number,
+          notify: true
+        },
         fov: {
           type: Number,
           value: 45,
@@ -396,6 +386,11 @@
       },
       attached: function () {
         this.async(function (){
+          if (typeof this.aspect === "undefined") {
+            var renderer = this.fire('three-js-get-renderer').detail.renderer;
+            this.aspect = renderer.domElement.clientWidth / renderer.domElement.clientHeight;
+          }
+
           this.object = new THREE.PerspectiveCamera(this.fov, this.aspect, 0.1, 10000);
           this.object.lookAt(new THREE.Vector3(0, 0, 0));
           this.addToParent3();
